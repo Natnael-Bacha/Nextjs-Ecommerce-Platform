@@ -38,7 +38,7 @@ export default function SigninForm() {
       const { error } = await authClient.signIn.email({
         email: data.email,
         password: data.password,
-        callbackURL: "/dashboard",
+        callbackURL: "/userProducts",
       });
 
       if (error) {
@@ -47,7 +47,7 @@ export default function SigninForm() {
       }
 
       toast.success("Welcome back!");
-      router.push("/dashboard");
+      router.push("/userProducts");
     } catch (err) {
       setServerError("Something went wrong. Please try again.");
     } finally {
@@ -62,7 +62,7 @@ export default function SigninForm() {
     try {
       const { error } = await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/dashboard",
+        callbackURL: "/userProducts",
       });
 
       if (error) {

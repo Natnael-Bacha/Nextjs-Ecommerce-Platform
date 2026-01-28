@@ -38,16 +38,16 @@ export default function SigninForm() {
       const { error } = await authClient.signIn.email({
         email: data.email,
         password: data.password,
-        callbackURL: "/dashboard",
+        callbackURL: "/adminHomePage",
       });
 
       if (error) {
-        setServerError(error.message || "Invalid email or password");
+        setServerError(error.message || "Sign in failed!");
         return;
       }
 
       toast.success("Welcome back!");
-      router.push("/dashboard");
+      router.push("/adminHomePage");
     } catch (err) {
       setServerError("Something went wrong. Please try again.");
     } finally {

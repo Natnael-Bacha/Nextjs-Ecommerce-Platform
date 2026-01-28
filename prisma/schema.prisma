@@ -20,6 +20,7 @@ model User {
   middleName    String?
   lastName      String?
   phoneNumber   String?
+  role          String?
   email         String
   emailVerified Boolean   @default(false)
   image         String?
@@ -27,6 +28,8 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+
+  cart          Cart? 
 
   @@unique([email])
   @@map("user")
@@ -81,9 +84,31 @@ model Verification {
 }
 
 model Product{
-  id         String   @id
+  id         String   @id @default(uuid())
   name       String
   price      Decimal @db.Decimal(12,2)
   quantity   Int  @default(0)
+  image      String
   lowStockAt Int?
+
+  CartItems    CartItem[]
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+}
+
+model CartItem {
+  id        String  @id @default(cuid())
+  cartId   String
+  productId String
+  quantity Int     @default(1)
+
+  cart     Cart    @relation(fields: [cartId], references: [id])
+  product  Product @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
 }

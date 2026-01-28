@@ -49,7 +49,7 @@ export function SignupForm() {
       middleName: data.middleName,
       lastName: data.lastName,
       phoneNumber: data.phoneNumber,
-      callbackURL: "/dashboard",
+      callbackURL: "/userProducts",
     });
 
     if (authError) {
@@ -57,7 +57,7 @@ export function SignupForm() {
       setLoading(false);
     } else {
       toast.success("Welcome aboard!");
-      router.push("/dashboard");
+      router.push("/userProducts");
     }
   };
 
@@ -65,7 +65,7 @@ export function SignupForm() {
     setLoading(true);
     const { error } = await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/dashboard",
+      callbackURL: "/userProducts",
     });
     if (error) {
       setLoading(false);
