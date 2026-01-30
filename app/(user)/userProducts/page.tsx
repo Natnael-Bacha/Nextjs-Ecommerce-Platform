@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { unauthorized } from "next/navigation";
 import Image from "next/image";
 import AddToCartButton from "@/components/addToCart";
+import BuyProductModal from "@/components/BuyProductModal";
 
 export default async function UserProduct() {
   const session = await getServerSession();
@@ -56,9 +57,10 @@ export default async function UserProduct() {
 
               <div className="mt-auto flex gap-2">
                 <AddToCartButton productId={product.id} />
-                <button className="flex-1 rounded-lg bg-black px-3 py-2 text-sm text-white hover:bg-gray-800">
-                  Buy Now
-                </button>
+                <BuyProductModal
+                  productId={product.id}
+                  maxQuantity={product.quantity}
+                />
               </div>
             </div>
           </div>

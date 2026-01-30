@@ -20,7 +20,7 @@ model User {
   middleName    String?
   lastName      String?
   phoneNumber   String?
-  role          String?
+  role          String?   @default("user")
   email         String
   emailVerified Boolean   @default(false)
   image         String?
@@ -29,7 +29,8 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
-  cart          Cart? 
+  cart          Cart?
+  orders        Order[]
 
   @@unique([email])
   @@map("user")
@@ -92,6 +93,7 @@ model Product{
   lowStockAt Int?
 
   CartItems    CartItem[]
+  orderItems   OrderItem[]
 }
 
 model Cart {
@@ -111,4 +113,40 @@ model CartItem {
   product  Product @relation(fields: [productId], references: [id])
 
   @@unique([cartId, productId])
+}
+
+
+model Order {
+  id        String      @id @default(uuid())
+  userId    String
+  total     Float
+  status    OrderStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+
+  items     OrderItem[]
+
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+model OrderItem {
+  id        String   @id @default(uuid())
+
+  orderId   String
+  productId String
+
+  quantity  Int
+  price     Decimal   
+
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
 }

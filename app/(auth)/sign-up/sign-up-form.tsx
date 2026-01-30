@@ -49,6 +49,7 @@ export function SignupForm() {
       middleName: data.middleName,
       lastName: data.lastName,
       phoneNumber: data.phoneNumber,
+
       callbackURL: "/userProducts",
     });
 

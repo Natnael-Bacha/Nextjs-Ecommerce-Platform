@@ -17,20 +17,20 @@ const sidebarItems = [
   {
     label: "Dashboard",
     icon: LayoutDashboard,
-    href: "adminHomePage/",
+    href: "/adminHomePage",
   },
   {
     label: "Products",
     icon: Package,
     href: "/adminProductsPage",
   },
-  { label: "Customers", icon: Users, href: "/admin/customers" },
+  { label: "Customers", icon: Users, href: "/customers" },
   {
     label: "Analytics",
     icon: BarChart3,
-    href: "/admin/analytics",
+    href: "/analytics",
   },
-  { label: "Settings", icon: Settings, href: "/admin/settings" },
+  { label: "Settings", icon: Settings, href: "/settings" },
 ];
 
 export default function AdminSidebar() {

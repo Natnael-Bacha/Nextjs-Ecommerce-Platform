@@ -1,6 +1,9 @@
 "use client";
 
+import CheckoutModal from "@/components/CheckoutModal";
 import RemoveCartItemButton from "@/components/removeCartItem";
+import { updateCartQuantity } from "@/lib/actions/cart";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -23,7 +26,7 @@ export default function CartClient({
 }: CartClientProps) {
   const [items, setItems] = useState(initialCartItems);
 
-  const updateQuantity = (id: string, change: number) => {
+  const updateQuantity = async (id: string, change: number) => {
     setItems((prev) =>
       prev.map((item) =>
         item.id === id
@@ -34,14 +37,24 @@ export default function CartClient({
           : item,
       ),
     );
+
+    const item = items.find((i) => i.id === id);
+    if (!item) return;
+
+    const newQuantity = Math.max(1, item.quantity + change);
+
+    try {
+      await updateCartQuantity(id, newQuantity);
+    } catch (error) {
+      setItems(initialCartItems);
+    }
   };
 
   const handleRemoveFromState = (cartItemId: string) => {
     setItems((prev) => prev.filter((item) => item.id !== cartItemId));
   };
-
-  const removeItem = (id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+  const handleEmptyCart = () => {
+    setItems([]);
   };
 
   if (items.length === 0) {
@@ -101,7 +114,9 @@ export default function CartClient({
             >
               <div className="relative w-28 h-28 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
                 {item.product.image ? (
-                  <img
+                  <Image
+                    width={100}
+                    height={100}
                     src={item.product.image}
                     alt={item.product.name}
                     className="w-full h-full object-cover"
@@ -218,9 +233,7 @@ export default function CartClient({
           </p>
         </div>
 
-        <button className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition shadow-lg hover:shadow-xl">
-          Proceed to Checkout
-        </button>
+        <CheckoutModal total={total} onEmpty={handleEmptyCart} />
       </div>
     </div>
   );

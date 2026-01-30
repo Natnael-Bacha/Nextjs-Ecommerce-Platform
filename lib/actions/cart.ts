@@ -92,7 +92,7 @@ export async function getCartItems() {
           id: item.product.id,
           name: item.product.name,
           image: item.product.image,
-          price: Number(item.product.price), // ✅ FIX
+          price: Number(item.product.price),
         },
       })) ?? []
     );
@@ -113,6 +113,86 @@ export async function removeCartItem(cartItemId: string, cartId: string) {
     where: {
       id: cartItemId,
       cartId,
+    },
+  });
+}
+
+export async function checkout() {
+  const session = await getServerSession();
+  const userId = session?.user?.id;
+
+  if (!userId) unauthorized();
+
+  return await prisma.$transaction(async (tx) => {
+    const cart = await tx.cart.findFirst({
+      where: { userId },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    if (!cart || cart.items.length === 0) {
+      throw new Error("Cart is empty");
+    }
+
+    for (const item of cart.items) {
+      if (item.product.quantity < item.quantity) {
+        throw new Error(`Not enough stock for ${item.product.name}`);
+      }
+    }
+
+    const total = cart.items.reduce(
+      (sum, item) => sum + Number(item.product.price) * item.quantity,
+      0,
+    );
+
+    const order = await tx.order.create({
+      data: {
+        userId,
+        total,
+        status: "PAID",
+        items: {
+          create: cart.items.map((item) => ({
+            quantity: item.quantity,
+            price: item.product.price,
+            product: {
+              connect: {
+                id: item.productId,
+              },
+            },
+          })),
+        },
+      },
+    });
+
+    for (const item of cart.items) {
+      await tx.product.update({
+        where: { id: item.productId },
+        data: {
+          quantity: {
+            decrement: item.quantity,
+          },
+        },
+      });
+    }
+
+    await tx.cartItem.deleteMany({
+      where: { cartId: cart.id },
+    });
+
+    return order;
+  });
+}
+
+export async function updateCartQuantity(itemId: string, quantity: number) {
+  await prisma.cartItem.update({
+    where: { id: itemId },
+    data: {
+      quantity,
     },
   });
 }

@@ -2,14 +2,14 @@ import { getServerSession } from "@/lib/get-session";
 import prisma from "@/lib/prisma";
 import { unauthorized } from "next/navigation";
 import Link from "next/link";
-import { Pencil } from "lucide-react";
+import { Pencil, Search } from "lucide-react";
 import Image from "next/image";
 import DeleteProductButton from "../../../components/delete-product-button";
 
 export default async function AdminProductPage() {
   const session = await getServerSession();
   const user = session?.user;
-  if (user?.role !== "admin" || !user) unauthorized();
+  if (!user || user.role !== "admin") unauthorized();
 
   const products = await prisma.product.findMany({
     select: {
@@ -23,13 +23,27 @@ export default async function AdminProductPage() {
   });
 
   return (
-    <div className="min-h-screen bg-zinc-50 px-6 py-10">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-8 flex items-center justify-between">
+    <div className="min-h-screen bg-zinc-50 py-10">
+      <div className="mx-auto max-w-7xl px-6 flex flex-col gap-8">
+        <div className="w-full max-w-md">
+          <div className="relative w-full">
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
+              size={16}
+            />
+            <input
+              type="text"
+              placeholder="Search everything..."
+              className="w-full rounded-md border border-zinc-200 bg-zinc-50 py-2 pl-10 pr-4 text-sm outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold text-zinc-900">Products</h1>
         </div>
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {products.map((product) => (
             <div
               key={product.id}
@@ -46,7 +60,7 @@ export default async function AdminProductPage() {
                 )}
               </div>
 
-              <div className="space-y-3 p-4">
+              <div className="space-y-2 p-4">
                 <h2 className="line-clamp-1 text-lg font-semibold text-zinc-900">
                   {product.name}
                 </h2>

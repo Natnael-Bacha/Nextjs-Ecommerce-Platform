@@ -7,6 +7,7 @@ import { ProductSchema, UpdateProductSchema } from "./validations";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import { float32 } from "zod";
 
 export async function createProduct(formData: FormData) {
   const session = await getServerSession();
@@ -166,4 +167,54 @@ export async function deleteProduct(productId: string) {
     console.log("Error Deleting Product", error);
     return { success: false, error: (error as Error).message };
   }
+}
+
+export async function buyProduct(productId: string, quantity: number) {
+  const session = await getServerSession();
+  const userId = session?.user?.id;
+
+  if (!userId) unauthorized();
+  if (quantity <= 0) throw new Error("Invalid quantity");
+
+  return await prisma.$transaction(async (tx) => {
+    const product = await tx.product.findUnique({
+      where: { id: productId },
+    });
+
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
+    if (product.quantity < quantity) {
+      throw new Error("Insufficient stock");
+    }
+
+    await tx.product.update({
+      where: { id: productId },
+      data: {
+        quantity: {
+          decrement: quantity,
+        },
+      },
+    });
+
+    const total = Number(product.price) * quantity;
+
+    const order = await tx.order.create({
+      data: {
+        userId,
+        total,
+        status: "PAID",
+        items: {
+          create: {
+            productId: product.id,
+            quantity,
+            price: product.price,
+          },
+        },
+      },
+    });
+
+    return order;
+  });
 }

@@ -16,7 +16,7 @@ export default function LogoutButton() {
       const res = await logOut();
       if (res.success) {
         toast.success("Logged out successfully!");
-        router.push("/sign-in"); // optional redirect
+        router.push("/");
       } else {
         toast.error(`Failed to log out: ${res.message}`);
       }

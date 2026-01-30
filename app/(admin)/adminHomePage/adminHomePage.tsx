@@ -1,23 +1,25 @@
-"use Client";
-import React from "react";
 import Link from "next/link";
-import {
-  Plus,
-  LayoutDashboard,
-  Package,
-  Users,
-  Settings,
-  BarChart3,
-  Search,
-  Bell,
-} from "lucide-react";
+import { Toaster } from "sonner";
+import { Plus, Search, Bell } from "lucide-react";
+import LogoutButton from "@/components/logout";
 
-export default function AdminHomePageClient() {
+interface AdminPageProps {
+  numberOfCustomers: number;
+  totalRevenue: number;
+  numberOfProducts: number;
+  totalSales: number;
+}
+
+export default function AdminHomePageClient({
+  numberOfCustomers,
+  totalRevenue,
+  numberOfProducts,
+  totalSales,
+}: AdminPageProps) {
   return (
     <div className="flex min-h-screen bg-zinc-50">
-      {/* Main Content */}
+      <Toaster richColors position="top-right" />
       <main className="flex-1">
-        {/* Header */}
         <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-8">
           <div className="relative w-96">
             <Search
@@ -35,10 +37,10 @@ export default function AdminHomePageClient() {
               <Bell size={20} />
             </button>
             <div className="h-8 w-8 rounded-full bg-zinc-900" />
+            <LogoutButton />
           </div>
         </header>
 
-        {/* Page Body */}
         <div className="p-8">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -48,7 +50,6 @@ export default function AdminHomePageClient() {
               </p>
             </div>
 
-            {/* CREATE PRODUCT BUTTON */}
             <Link
               href="/createProduct"
               className="flex items-center gap-2 rounded-md bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-800 active:scale-[0.98] shadow-sm"
@@ -58,19 +59,26 @@ export default function AdminHomePageClient() {
             </Link>
           </div>
 
-          {/* Stats Grid */}
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
               title="Total Revenue"
-              value="$45,231.89"
+              value={totalRevenue}
               change="+20.1%"
+              isCurrency
             />
-            <StatCard title="Sales" value="+2350" change="+180.1%" />
-            <StatCard title="Active Products" value="124" change="+3 new" />
-            <StatCard title="Total Customers" value="573" change="+20%" />
+            <StatCard title="Sales" value={totalSales} change="+180.1%" />
+            <StatCard
+              title="Active Products"
+              value={numberOfProducts}
+              change="+3 new"
+            />
+            <StatCard
+              title="Total Customers"
+              value={numberOfCustomers}
+              change="+20%"
+            />
           </div>
 
-          {/* Table Placeholder */}
           <div className="mt-8 rounded-xl border border-zinc-200 bg-white shadow-sm">
             <div className="border-b border-zinc-100 p-6">
               <h2 className="font-semibold text-zinc-900">Recent Activity</h2>
@@ -85,48 +93,32 @@ export default function AdminHomePageClient() {
   );
 }
 
-function SidebarItem({
-  icon,
-  label,
-  active = false,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-}) {
-  return (
-    <button
-      className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-        active
-          ? "bg-zinc-100 text-zinc-900"
-          : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
-      }`}
-    >
-      {icon}
-      {label}
-    </button>
-  );
-}
-
 function StatCard({
   title,
   value,
-  change,
+
+  isCurrency = false,
 }: {
   title: string;
-  value: string;
+  value: number;
   change: string;
+  isCurrency?: boolean;
 }) {
+  const formattedValue = isCurrency
+    ? new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+      }).format(value)
+    : value.toLocaleString();
+
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
       <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
         {title}
       </p>
       <div className="mt-2 flex items-baseline justify-between">
-        <h3 className="text-2xl font-bold text-zinc-900">{value}</h3>
-        <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-          {change}
-        </span>
+        <h3 className="text-2xl font-bold text-zinc-900">{formattedValue}</h3>
       </div>
     </div>
   );

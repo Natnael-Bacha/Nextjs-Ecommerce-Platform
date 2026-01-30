@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 interface RemoveCartItemButtonProps {
   cartItemId: string;
   cartId: string;
-  onRemove: (cartItemId: string) => void; // new callback
+  onRemove: (cartItemId: string) => void;
 }
 
 export default function RemoveCartItemButton({
@@ -21,10 +21,8 @@ export default function RemoveCartItemButton({
   const router = useRouter();
   const handleRemove = () => {
     startTransition(async () => {
-      // Optimistically remove from state
       onRemove(cartItemId);
 
-      // Call backend
       await removeCartItem(cartItemId, cartId);
       router.refresh();
       setSuccess(true);
