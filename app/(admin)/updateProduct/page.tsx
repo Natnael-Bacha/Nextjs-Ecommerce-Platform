@@ -34,7 +34,6 @@ export default async function Page({ searchParams }: PageProps) {
 
   return (
     <div className="max-w-xl mx-auto p-6">
-      <h1 className="text-xl font-semibold mb-4">Update Product</h1>
       <UpdateProductForm product={safeProduct} />
     </div>
   );

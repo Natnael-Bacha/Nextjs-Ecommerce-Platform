@@ -7,7 +7,7 @@ import { unauthorized } from "next/navigation";
 export async function addToCart(productId: string) {
   const session = await getServerSession();
 
-  if (!session?.user?.id) {
+  if (!session?.user?.id || session.user?.role !== "user") {
     unauthorized();
   }
 
@@ -61,7 +61,7 @@ export async function addToCart(productId: string) {
 export async function getCartItems() {
   const session = await getServerSession();
 
-  if (!session?.user?.id) {
+  if (!session?.user?.id || session.user?.role !== "user") {
     unauthorized();
   }
   try {
@@ -105,7 +105,7 @@ export async function getCartItems() {
 export async function removeCartItem(cartItemId: string, cartId: string) {
   const session = await getServerSession();
 
-  if (!session?.user?.id) {
+  if (!session?.user?.id || session?.user?.role !== "user") {
     unauthorized();
   }
 
@@ -120,8 +120,8 @@ export async function removeCartItem(cartItemId: string, cartId: string) {
 export async function checkout() {
   const session = await getServerSession();
   const userId = session?.user?.id;
-
-  if (!userId) unauthorized();
+  const user = session?.user;
+  if (!userId || user?.role !== "user") unauthorized();
 
   return await prisma.$transaction(async (tx) => {
     const cart = await tx.cart.findFirst({

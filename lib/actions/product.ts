@@ -8,6 +8,7 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import { float32 } from "zod";
+import { revalidatePath } from "next/cache";
 
 export async function createProduct(formData: FormData) {
   const session = await getServerSession();
@@ -21,6 +22,7 @@ export async function createProduct(formData: FormData) {
     quantity: formData.get("quantity"),
     lowStockAt: formData.get("lowStockAt"),
     image: formData.get("image"),
+    description: formData.get("description"),
   });
 
   if (!parsed.success) {
@@ -44,6 +46,14 @@ export async function createProduct(formData: FormData) {
     fs.writeFileSync(fullPath, buffer);
 
     const imageUrl = `/uploads/${filename}`;
+    console.log("Creating product with data:", {
+      name: parsed.data.name,
+      price: parsed.data.price,
+      quantity: parsed.data.quantity,
+      lowStockAt: parsed.data.lowStockAt,
+      image: imageUrl,
+      description: parsed.data.description,
+    });
 
     try {
       await prisma.product.create({
@@ -53,9 +63,10 @@ export async function createProduct(formData: FormData) {
           quantity: parsed.data.quantity,
           lowStockAt: parsed.data.lowStockAt,
           image: imageUrl,
+          description: parsed.data.description,
         },
       });
-
+      console.log("Product created");
       return { success: true };
     } catch (error) {
       console.log("Error Creating Product", error);
@@ -77,6 +88,7 @@ export async function updateProduct(formData: FormData) {
     quantity: formData.get("quantity"),
     lowStockAt: formData.get("lowStockAt"),
     image: formData.get("image"),
+    description: formData.get("description"),
   });
 
   if (!parsed.success) {
@@ -99,7 +111,6 @@ export async function updateProduct(formData: FormData) {
 
   if (image && image instanceof File && image.size > 0) {
     const buffer = Buffer.from(await image.arrayBuffer());
-
     const ext = path.extname(image.name);
     const filename = crypto.randomUUID() + ext;
     const uploadPath = path.join(process.cwd(), "public", "uploads");
@@ -109,14 +120,16 @@ export async function updateProduct(formData: FormData) {
     }
 
     fs.writeFileSync(path.join(uploadPath, filename), buffer);
-
     imageUrl = `/uploads/${filename}`;
 
     if (existingProduct.image) {
       const oldPath = path.join(process.cwd(), "public", existingProduct.image);
       if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
     }
+  } else if (!imageUrl) {
+    throw new Error("Product image is required.");
   }
+
   try {
     await prisma.product.update({
       where: { id },
@@ -125,9 +138,10 @@ export async function updateProduct(formData: FormData) {
         image: imageUrl,
       },
     });
+    revalidatePath("/adminProductsPage");
     return { success: true };
   } catch (error) {
-    console.log("Error Creating Product", error);
+    console.error("Error Updating Product", error);
     return { success: false, error: (error as Error).message };
   }
 }
@@ -217,4 +231,28 @@ export async function buyProduct(productId: string, quantity: number) {
 
     return order;
   });
+}
+
+export async function searchProduct(query?: string) {
+  const result = await prisma.product.findMany({
+    where: query
+      ? {
+          OR: [
+            { name: { contains: query, mode: "insensitive" } },
+            { description: { contains: query, mode: "insensitive" } },
+          ],
+        }
+      : {},
+
+    select: {
+      id: true,
+      name: true,
+      price: true,
+      image: true,
+      quantity: true,
+      lowStockAt: true,
+      description: true,
+    },
+  });
+  return result;
 }

@@ -8,21 +8,21 @@ const ACCEPTED_IMAGE_TYPES = [
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 export const ProductSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  price: z.coerce.number().nonnegative("Price must be non-negative"),
+  price: z.coerce.number().nonnegative("Price must be non-negative").min(1),
   quantity: z.coerce.number().int().min(0, "Quantity can not be negative"),
   lowStockAt: z.coerce
     .number()
     .int()
     .min(0, "Low Stock value can not be negative")
     .optional(),
-
+  description: z.string().min(1, "Description is required"), // ✅ added
   image: z
     .any()
     .refine((file) => file instanceof File, "Image is required.")
     .refine((file) => file?.size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
     .refine(
       (file) => ACCEPTED_IMAGE_TYPES.includes(file?.type),
-      ".jpg, .jpeg, .png and .webp files are accepted."
+      ".jpg, .jpeg, .png and .webp files are accepted.",
     ),
 });
 
@@ -34,25 +34,25 @@ export const UpdateProductSchema = z.object({
     .min(1, "Name is required")
     .refine(
       (val) => !/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/u.test(val),
-      "Product name cannot contain emojis"
+      "Product name cannot contain emojis",
     )
     .optional(),
 
-  price: z.coerce.number().nonnegative().optional(),
+  price: z.coerce.number().nonnegative().min(1).optional(),
   quantity: z.coerce.number().int().min(0).optional(),
   lowStockAt: z.coerce.number().int().min(0).optional(),
-
+  description: z.string().min(1, "Description cannot be empty").optional(),
   image: z
     .any()
     .optional()
     .refine((file) => !file || file instanceof File, "Invalid image")
     .refine(
       (file) => !file || file.size <= MAX_FILE_SIZE,
-      "Max file size is 5MB"
+      "Max file size is 5MB",
     )
     .refine(
       (file) => !file || ACCEPTED_IMAGE_TYPES.includes(file.type),
-      "Invalid image type"
+      "Invalid image type",
     ),
 });
 

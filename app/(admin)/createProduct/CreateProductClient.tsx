@@ -18,13 +18,12 @@ const ACCEPTED_IMAGE_TYPES = [
 ];
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-type ProductFormInput = z.input<typeof clientProductSchema>;
-
 const clientProductSchema = z.object({
   name: z.string().min(1, "Name is required"),
   price: z.coerce.number().min(0, "Price must be non-negative"),
   quantity: z.coerce.number().int().min(0, "Quantity cannot be negative"),
   lowStockAt: z.coerce.number().int().min(0).optional(),
+  description: z.string().min(1, "Description is required"),
   image: z
     .any()
     .refine((files) => files?.length === 1, "Image is required.")
@@ -38,11 +37,11 @@ const clientProductSchema = z.object({
     ),
 });
 
+type ProductFormInput = z.input<typeof clientProductSchema>;
 type ProductFormData = z.infer<typeof clientProductSchema>;
 
 export default function CreateProductClient() {
   const router = useRouter();
-
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
 
@@ -74,6 +73,7 @@ export default function CreateProductClient() {
     formData.append("price", parsed.price.toString());
     formData.append("quantity", parsed.quantity.toString());
     formData.append("lowStockAt", parsed.lowStockAt?.toString() || "0");
+    formData.append("description", parsed.description); // ✅ Added description
     formData.append("image", parsed.image[0]);
 
     try {
@@ -123,6 +123,24 @@ export default function CreateProductClient() {
                 />
                 {errors.name && (
                   <p className="text-xs text-red-500">{errors.name.message}</p>
+                )}
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-medium text-zinc-700">
+                  Product Description
+                </label>
+                <textarea
+                  {...register("description")}
+                  placeholder="Write a brief description of the product"
+                  className="w-full rounded-md border border-zinc-200 px-4 py-2.5 text-sm outline-none focus:border-zinc-900 focus:ring-4 focus:ring-zinc-100 transition resize-none"
+                  rows={4}
+                />
+                {errors.description && (
+                  <p className="text-xs text-red-500">
+                    {errors.description.message}
+                  </p>
                 )}
               </div>
 

@@ -30,7 +30,6 @@ const sidebarItems = [
     icon: BarChart3,
     href: "/analytics",
   },
-  { label: "Settings", icon: Settings, href: "/settings" },
 ];
 
 export default function AdminSidebar() {

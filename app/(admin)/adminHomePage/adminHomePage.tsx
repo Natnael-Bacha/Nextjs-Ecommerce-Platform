@@ -2,12 +2,17 @@ import Link from "next/link";
 import { Toaster } from "sonner";
 import { Plus, Search, Bell } from "lucide-react";
 import LogoutButton from "@/components/logout";
-
+import ProductChart from "@/components/product-chart";
+interface WeeklyProductData {
+  week: string;
+  products: number;
+}
 interface AdminPageProps {
   numberOfCustomers: number;
   totalRevenue: number;
   numberOfProducts: number;
   totalSales: number;
+  data: WeeklyProductData[];
 }
 
 export default function AdminHomePageClient({
@@ -15,24 +20,14 @@ export default function AdminHomePageClient({
   totalRevenue,
   numberOfProducts,
   totalSales,
+  data,
 }: AdminPageProps) {
   return (
     <div className="flex min-h-screen bg-zinc-50">
       <Toaster richColors position="top-right" />
       <main className="flex-1">
-        <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-8">
-          <div className="relative w-96">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
-              size={16}
-            />
-            <input
-              type="text"
-              placeholder="Search everything..."
-              className="w-full rounded-md border border-zinc-200 bg-zinc-50 py-1.5 pl-10 pr-4 text-sm outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition"
-            />
-          </div>
-          <div className="flex items-center gap-4">
+        <header className="flex h-16 items-center justify-end border-b border-zinc-200 bg-white px-8">
+          <div className="flex items-center gap-4 ">
             <button className="rounded-full p-2 text-zinc-500 hover:bg-zinc-100">
               <Bell size={20} />
             </button>
@@ -81,10 +76,12 @@ export default function AdminHomePageClient({
 
           <div className="mt-8 rounded-xl border border-zinc-200 bg-white shadow-sm">
             <div className="border-b border-zinc-100 p-6">
-              <h2 className="font-semibold text-zinc-900">Recent Activity</h2>
+              <h2 className="font-semibold text-zinc-900">
+                Product Creation Statisitcs
+              </h2>
             </div>
             <div className="flex h-64 items-center justify-center text-zinc-400 text-sm italic">
-              Recent product updates and orders will appear here...
+              <ProductChart data={data} />
             </div>
           </div>
         </div>

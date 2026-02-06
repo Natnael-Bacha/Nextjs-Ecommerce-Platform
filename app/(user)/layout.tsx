@@ -10,7 +10,7 @@ export default async function RootLayout({
 }) {
   const session = await getServerSession();
   const user = session?.user;
-  if (!user) unauthorized();
+  if (!user || user.role !== "user") unauthorized();
   const cartItems = await getCartItems();
   const userInfo = { name: user?.firstName, cartCount: cartItems.length };
 
