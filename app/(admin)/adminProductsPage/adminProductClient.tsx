@@ -150,11 +150,11 @@ function ProductCard({
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md">
       <div className="relative h-48 w-full bg-zinc-100 overflow-hidden">
         {product.image ? (
-          <Image
+          <img
             src={product.image}
             alt={product.name}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            className="object-cover transition-transform duration-300 group-hover:scale-105 w-full h-full absolute inset-0"
+            loading="lazy"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-zinc-400 text-xs">

@@ -57,11 +57,11 @@ function ProductCard({ product }: { product: Product }) {
     <div className="flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md">
       <div className="relative h-56 w-full overflow-hidden bg-zinc-100">
         {product.image && (
-          <Image
+          <img
             src={product.image}
             alt={product.name}
-            fill
-            className="object-cover transition-transform duration-300 hover:scale-105"
+            className="object-cover transition-transform duration-300 hover:scale-105 w-full h-full"
+            style={{ position: "absolute", inset: 0 }}
           />
         )}
       </div>
