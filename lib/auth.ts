@@ -19,6 +19,7 @@ export const auth = betterAuth({
   trustedOrigins: [
     "https://nextjs-ecommerce-platform.vercel.app",
     "https://*.vercel.app",
+    "https://essentials-3zil.onrender.com",
   ],
   user: {
     additionalFields: {
