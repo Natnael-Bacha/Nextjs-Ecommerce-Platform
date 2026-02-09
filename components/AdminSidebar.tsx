@@ -24,7 +24,11 @@ const sidebarItems = [
     icon: Package,
     href: "https://essentials-3zil.onrender.com/adminProductsPage",
   },
-  { label: "Customers", icon: Users, href: "/customers" },
+  {
+    label: "Customers",
+    icon: Users,
+    href: "https://essentials-3zil.onrender.com/customers",
+  },
   {
     label: "Analytics",
     icon: BarChart3,
