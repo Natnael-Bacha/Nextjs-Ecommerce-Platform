@@ -17,18 +17,18 @@ const sidebarItems = [
   {
     label: "Dashboard",
     icon: LayoutDashboard,
-    href: "/adminHomePage",
+    href: "https://essentials-3zil.onrender.com/adminHomePage",
   },
   {
     label: "Products",
     icon: Package,
-    href: "/adminProductsPage",
+    href: "https://essentials-3zil.onrender.com/adminProductsPage",
   },
   { label: "Customers", icon: Users, href: "/customers" },
   {
     label: "Analytics",
     icon: BarChart3,
-    href: "/analytics",
+    href: "https://essentials-3zil.onrender.com/analytics",
   },
 ];
 //https://essentials-3zil.onrender.com
