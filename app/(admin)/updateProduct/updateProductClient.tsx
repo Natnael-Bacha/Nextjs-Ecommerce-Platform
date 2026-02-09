@@ -8,7 +8,6 @@ import { useTransition, useState, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import z from "zod";
 import { toast } from "sonner";
-import Image from "next/image";
 
 interface Props {
   product: {
@@ -25,7 +24,6 @@ interface Props {
 export default function UpdateProductForm({ product }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-
   const [preview, setPreview] = useState<string>(product.image);
   const [imageChanged, setImageChanged] = useState(false);
 
@@ -54,15 +52,21 @@ export default function UpdateProductForm({ product }: Props) {
     }
   };
 
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+
   async function onSubmit(values: UpdateProductClientInput) {
     const formData = new FormData();
-
     formData.append("id", product.id);
     formData.append("name", String(values.name));
     formData.append("price", String(values.price));
     formData.append("quantity", String(values.quantity));
     formData.append("description", values.description || "");
-
     if (values.lowStockAt !== undefined && values.lowStockAt !== null) {
       formData.append("lowStockAt", String(values.lowStockAt));
     }
@@ -72,13 +76,13 @@ export default function UpdateProductForm({ product }: Props) {
     ) as HTMLInputElement;
 
     if (fileInput?.files?.[0]) {
-      formData.append("image", fileInput.files[0]);
+      const base64Image = await fileToBase64(fileInput.files[0]);
+      formData.append("image", base64Image);
     }
 
     startTransition(async () => {
       try {
         const result = await updateProduct(formData);
-
         if (result.success) {
           toast.success("Product updated successfully!");
           router.push("/adminProductsPage");
@@ -101,14 +105,15 @@ export default function UpdateProductForm({ product }: Props) {
     >
       <h2 className="text-2xl font-bold">Update Product</h2>
 
-      {/* Image Preview & Upload */}
       <div className="space-y-4">
         <label className="block font-medium text-gray-700">Product Image</label>
-
         <div className="relative w-40 h-40 border rounded-lg overflow-hidden bg-gray-50">
-          <Image src={preview} alt="Preview" fill className="object-cover" />
+          <img
+            src={preview}
+            alt="Preview"
+            className="object-cover w-full h-full absolute inset-0"
+          />
         </div>
-
         <input
           type="file"
           name="image"
@@ -118,7 +123,6 @@ export default function UpdateProductForm({ product }: Props) {
         />
       </div>
 
-      {/* Name */}
       <div>
         <label className="block mb-1 font-medium text-gray-700">
           Product Name
@@ -132,7 +136,6 @@ export default function UpdateProductForm({ product }: Props) {
         )}
       </div>
 
-      {/* Description */}
       <div>
         <label className="block mb-1 font-medium text-gray-700">
           Description
@@ -150,7 +153,6 @@ export default function UpdateProductForm({ product }: Props) {
         )}
       </div>
 
-      {/* Price, Quantity, Low Stock */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="block mb-1 font-medium text-gray-700">Price</label>
@@ -199,7 +201,6 @@ export default function UpdateProductForm({ product }: Props) {
         </div>
       </div>
 
-      {/* Submit */}
       <button
         type="submit"
         disabled={isButtonDisabled}

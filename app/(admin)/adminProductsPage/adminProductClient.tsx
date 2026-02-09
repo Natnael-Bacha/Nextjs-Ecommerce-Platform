@@ -25,12 +25,10 @@ export default function AdminProductClientPage({ products }: productPageProps) {
   const pathname = usePathname();
   const { replace } = useRouter();
 
-  // Local state to control the input text
   const [query, setQuery] = useState(
     searchParams.get("query")?.toString() || "",
   );
 
-  // Update the URL based on search term (debounced)
   const updateUrl = useDebouncedCallback((term: string) => {
     const params = new URLSearchParams(searchParams);
     if (term) {
@@ -41,13 +39,11 @@ export default function AdminProductClientPage({ products }: productPageProps) {
     replace(`${pathname}?${params.toString()}`);
   }, 300);
 
-  // Handles typing
   const handleSearch = (term: string) => {
     setQuery(term);
     updateUrl(term);
   };
 
-  // Handles clearing the search
   const handleClear = () => {
     setQuery("");
     const params = new URLSearchParams(searchParams);

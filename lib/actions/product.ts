@@ -9,6 +9,7 @@ import path from "path";
 import crypto from "crypto";
 import { float32 } from "zod";
 import { revalidatePath } from "next/cache";
+import { pc } from "../pinecone";
 
 export async function createProduct(formData: FormData) {
   const session = await getServerSession();
@@ -30,43 +31,45 @@ export async function createProduct(formData: FormData) {
       "Validation failed: " + JSON.stringify(parsed.error.format()),
     );
   } else {
-    const file = parsed.data.image as File;
-    const buffer = Buffer.from(await file.arrayBuffer());
-
-    const ext = path.extname(file.name);
-    const filename = crypto.randomUUID() + ext;
-
-    const uploadPath = path.join(process.cwd(), "public", "uploads");
-
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-
-    const fullPath = path.join(uploadPath, filename);
-    fs.writeFileSync(fullPath, buffer);
-
-    const imageUrl = `/uploads/${filename}`;
-    console.log("Creating product with data:", {
-      name: parsed.data.name,
-      price: parsed.data.price,
-      quantity: parsed.data.quantity,
-      lowStockAt: parsed.data.lowStockAt,
-      image: imageUrl,
-      description: parsed.data.description,
-    });
-
     try {
-      await prisma.product.create({
+      const product = await prisma.product.create({
         data: {
           name: parsed.data.name,
           price: parsed.data.price,
           quantity: parsed.data.quantity,
           lowStockAt: parsed.data.lowStockAt,
-          image: imageUrl,
+          image: parsed.data.image,
           description: parsed.data.description,
         },
       });
       console.log("Product created");
+      const indexInformation = parsed.data.name + " " + parsed.data.description;
+      const embeddings = await pc.inference.embed({
+        model: "multilingual-e5-large",
+        inputs: [indexInformation],
+        parameters: {
+          inputType: "passage",
+          truncate: "END",
+        },
+      });
+      const embedding = embeddings.data[0];
+
+      if (embedding.vectorType !== "dense") {
+        throw new Error("Expected dense embedding");
+      }
+
+      const vectorValues = embedding.values;
+
+      const index = pc.index({ name: process.env.PINECONE_INDEX! });
+
+      await index.upsert({
+        records: [
+          {
+            id: product.id,
+            values: vectorValues,
+          },
+        ],
+      });
       return { success: true };
     } catch (error) {
       console.log("Error Creating Product", error);
@@ -107,35 +110,12 @@ export async function updateProduct(formData: FormData) {
     throw new Error("Product not found");
   }
 
-  let imageUrl = existingProduct.image;
-
-  if (image && image instanceof File && image.size > 0) {
-    const buffer = Buffer.from(await image.arrayBuffer());
-    const ext = path.extname(image.name);
-    const filename = crypto.randomUUID() + ext;
-    const uploadPath = path.join(process.cwd(), "public", "uploads");
-
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-
-    fs.writeFileSync(path.join(uploadPath, filename), buffer);
-    imageUrl = `/uploads/${filename}`;
-
-    if (existingProduct.image) {
-      const oldPath = path.join(process.cwd(), "public", existingProduct.image);
-      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-    }
-  } else if (!imageUrl) {
-    throw new Error("Product image is required.");
-  }
-
   try {
     await prisma.product.update({
       where: { id },
       data: {
         ...rest,
-        image: imageUrl,
+        image: parsed.data.image,
       },
     });
     revalidatePath("/adminProductsPage");
@@ -233,26 +213,49 @@ export async function buyProduct(productId: string, quantity: number) {
   });
 }
 
-export async function searchProduct(query?: string) {
-  const result = await prisma.product.findMany({
-    where: query
-      ? {
-          OR: [
-            { name: { contains: query, mode: "insensitive" } },
-            { description: { contains: query, mode: "insensitive" } },
-          ],
-        }
-      : {},
+export async function searchProducts(userQuery?: string) {
+  if (!userQuery) {
+    return prisma.product.findMany({
+      orderBy: { name: "asc" },
+    });
+  }
 
-    select: {
-      id: true,
-      name: true,
-      price: true,
-      image: true,
-      quantity: true,
-      lowStockAt: true,
-      description: true,
+  const queryEmbedding = await pc.inference.embed({
+    model: "multilingual-e5-large",
+    inputs: [userQuery],
+    parameters: {
+      inputType: "passage",
+      truncate: "END",
     },
   });
-  return result;
+
+  const index = pc.index({ name: process.env.PINECONE_INDEX! });
+  const vectorEmbedding = queryEmbedding.data[0];
+  if (vectorEmbedding.vectorType !== "dense") {
+    throw new Error("Expected dense embedding");
+  }
+
+  const embedding = vectorEmbedding.values;
+  const searchResults = await index.query({
+    vector: embedding,
+    topK: 5,
+    includeMetadata: true,
+  });
+
+  const productIds = searchResults.matches.map((m) => m.id);
+
+  const products = await prisma.product.findMany({
+    where: { id: { in: productIds } },
+  });
+
+  const relevanceOrder = new Map(productIds.map((id, index) => [id, index]));
+
+  return products.sort((a, b) => {
+    const rankA = relevanceOrder.get(a.id) ?? 999;
+    const rankB = relevanceOrder.get(b.id) ?? 999;
+
+    if (rankA !== rankB) return rankA - rankB;
+
+    return a.name.localeCompare(b.name);
+  });
 }

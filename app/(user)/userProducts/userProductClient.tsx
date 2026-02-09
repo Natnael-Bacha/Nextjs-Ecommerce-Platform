@@ -43,7 +43,7 @@ export default function UserProductClientPage({ products }: productPageProps) {
 
 function ProductCard({ product }: { product: Product }) {
   const [expanded, setExpanded] = useState(false);
-  const maxLength = 100; // You can adjust this limit
+  const maxLength = 100;
 
   const hasDescription = !!product.description;
   const isLongDescription = (product.description?.length ?? 0) > maxLength;

@@ -17,21 +17,21 @@ const sidebarItems = [
   {
     label: "Dashboard",
     icon: LayoutDashboard,
-    href: "https://essentials-3zil.onrender.com/adminHomePage",
+    href: "/adminHomePage",
   },
   {
     label: "Products",
     icon: Package,
-    href: "https://essentials-3zil.onrender.com/adminProductsPage",
+    href: "/adminProductsPage",
   },
   { label: "Customers", icon: Users, href: "/customers" },
   {
     label: "Analytics",
     icon: BarChart3,
-    href: "https://essentials-3zil.onrender.com/analytics",
+    href: "/analytics",
   },
 ];
-
+//https://essentials-3zil.onrender.com
 export default function AdminSidebar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

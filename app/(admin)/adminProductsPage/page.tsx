@@ -3,7 +3,7 @@ import { getServerSession } from "@/lib/get-session";
 import prisma from "@/lib/prisma";
 import { unauthorized } from "next/navigation";
 import AdminProductClientPage from "./adminProductClient";
-import { searchProduct } from "@/lib/actions/product";
+import { searchProducts } from "@/lib/actions/product";
 
 // 1. Define the props to accept searchParams
 export default async function AdminProductServerPage({
@@ -19,7 +19,7 @@ export default async function AdminProductServerPage({
   const { query } = await searchParams;
 
   // 2. Fetch products based on the query
-  const products = await searchProduct(query);
+  const products = await searchProducts(query);
 
   const formattedProducts = products.map((product) => ({
     ...product,

@@ -2,7 +2,7 @@ import { getServerSession } from "@/lib/get-session";
 import prisma from "@/lib/prisma";
 import { unauthorized } from "next/navigation";
 import UserProductClientPage from "./userProductClient";
-import { searchProduct } from "@/lib/actions/product";
+import { searchProducts } from "@/lib/actions/product";
 
 export default async function userProductServer({
   searchParams,
@@ -13,14 +13,12 @@ export default async function userProductServer({
   const user = session?.user;
   if (!user || user.role !== "user") unauthorized();
   const { query } = await searchParams;
-  const products = await searchProduct(query);
+  const products = await searchProducts(query);
 
-  const formattedProducts = products
-    .map((product) => ({
-      ...product,
-      price: Number(product.price),
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const formattedProducts = products.map((product) => ({
+    ...product,
+    price: Number(product.price),
+  }));
 
   return <UserProductClientPage products={formattedProducts} />;
 }

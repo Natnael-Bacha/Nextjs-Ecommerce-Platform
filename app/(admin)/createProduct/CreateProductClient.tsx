@@ -63,24 +63,36 @@ export default function CreateProductClient() {
     }
   }, [imageFile]);
 
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+
   const onSubmit = async (data: ProductFormInput) => {
-    const parsed: ProductFormData = clientProductSchema.parse(data);
-
-    setLoading(true);
-
-    const formData = new FormData();
-    formData.append("name", parsed.name);
-    formData.append("price", parsed.price.toString());
-    formData.append("quantity", parsed.quantity.toString());
-    formData.append("lowStockAt", parsed.lowStockAt?.toString() || "0");
-    formData.append("description", parsed.description); // ✅ Added description
-    formData.append("image", parsed.image[0]);
-
     try {
+      setLoading(true);
+
+      const parsed: ProductFormData = clientProductSchema.parse(data);
+
+      const base64Image = await fileToBase64(parsed.image[0]);
+
+      const formData = new FormData();
+      formData.append("name", parsed.name);
+      formData.append("price", parsed.price.toString());
+      formData.append("quantity", parsed.quantity.toString());
+      formData.append("lowStockAt", parsed.lowStockAt?.toString() || "0");
+      formData.append("description", parsed.description);
+      formData.append("image", base64Image);
+
       await createProduct(formData);
-      router.push("/adminHomePage");
+
       toast.success("Product created successfully!");
-    } catch {
+      router.push("/adminHomePage");
+    } catch (err) {
+      console.error(err);
       toast.error("Failed to create product. Please try again.");
     } finally {
       setLoading(false);

@@ -15,15 +15,8 @@ export const ProductSchema = z.object({
     .int()
     .min(0, "Low Stock value can not be negative")
     .optional(),
-  description: z.string().min(1, "Description is required"), // ✅ added
-  image: z
-    .any()
-    .refine((file) => file instanceof File, "Image is required.")
-    .refine((file) => file?.size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
-    .refine(
-      (file) => ACCEPTED_IMAGE_TYPES.includes(file?.type),
-      ".jpg, .jpeg, .png and .webp files are accepted.",
-    ),
+  description: z.string().min(1, "Description is required"),
+  image: z.string().min(1, "Image is required"),
 });
 
 export const UpdateProductSchema = z.object({
@@ -42,18 +35,7 @@ export const UpdateProductSchema = z.object({
   quantity: z.coerce.number().int().min(0).optional(),
   lowStockAt: z.coerce.number().int().min(0).optional(),
   description: z.string().min(1, "Description cannot be empty").optional(),
-  image: z
-    .any()
-    .optional()
-    .refine((file) => !file || file instanceof File, "Invalid image")
-    .refine(
-      (file) => !file || file.size <= MAX_FILE_SIZE,
-      "Max file size is 5MB",
-    )
-    .refine(
-      (file) => !file || ACCEPTED_IMAGE_TYPES.includes(file.type),
-      "Invalid image type",
-    ),
+  image: z.string().optional(),
 });
 
 export const UpdateProductClientSchema = UpdateProductSchema.omit({
