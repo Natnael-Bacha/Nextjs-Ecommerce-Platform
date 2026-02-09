@@ -16,11 +16,11 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     },
   },
-  // trustedOrigins: [
-  //   "https://nextjs-ecommerce-platform.vercel.app",
-  //   "https://*.vercel.app",
-  //   "https://essentials-3zil.onrender.com",
-  // ],
+  trustedOrigins: [
+    "https://nextjs-ecommerce-platform.vercel.app",
+    "https://*.vercel.app",
+    "https://essentials-3zil.onrender.com",
+  ],
   user: {
     additionalFields: {
       firstName: {
