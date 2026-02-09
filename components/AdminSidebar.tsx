@@ -52,8 +52,11 @@ export default function AdminSidebar() {
   const renderNavItems = (showLabels = true) => (
     <>
       {sidebarItems.map((item) => {
+        const itemPath = new URL(item.href).pathname;
+
         const isActive =
-          pathname === item.href || pathname.startsWith(`${item.href}/`);
+          pathname === itemPath || pathname.startsWith(`${itemPath}/`);
+
         const IconComponent = item.icon;
 
         return (
