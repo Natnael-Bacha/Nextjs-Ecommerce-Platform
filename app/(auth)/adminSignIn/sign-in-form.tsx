@@ -78,12 +78,14 @@ export default function SigninForm() {
           )}
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">Email</label>
+            <label className="text-sm font-medium text-zinc-700">
+              Email - admin@gmail.com
+            </label>
             <input
               {...register("email")}
               type="email"
               disabled={loading}
-              placeholder="name@example.com"
+              placeholder="admin@gmail.com"
               className={`w-full rounded-md border px-4 py-2.5 text-sm outline-none transition
                 ${
                   errors.email
@@ -106,7 +108,7 @@ export default function SigninForm() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium text-zinc-700">
-                Password
+                Password - EssentialAdmin@12
               </label>
               <Link
                 href="/forgot-password"
@@ -121,7 +123,7 @@ export default function SigninForm() {
                 {...register("password")}
                 type={showPassword ? "text" : "password"}
                 disabled={loading}
-                placeholder="••••••••"
+                placeholder="EssentialAdmin@12"
                 className={`w-full rounded-md border px-4 py-2.5 text-sm outline-none transition
                   ${
                     errors.password

@@ -23,6 +23,7 @@ export default async function AnalyticsServerPage() {
   const tweleveHourOrders = Number(await getNumberOfOrderForTwelveHours());
   const avgOrdersPerHour = Number(await getAverageOfOrdersPerHour());
   const peakHour = await getPeakHour();
+
   return (
     <AnalyticsClientPage
       data={data}
